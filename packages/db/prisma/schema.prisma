@@ -1,0 +1,437 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Plan {
+  LITE
+  STANDARD
+  HOUSEHOLD
+  PREMIUM
+}
+
+enum MemberRole {
+  OWNER
+  ADULT
+  CHILD
+}
+
+enum AssetType {
+  EMAIL
+  SSN
+  PHONE
+  CREDIT_CARD
+  BANK_ACCOUNT
+  PASSPORT
+  ADDRESS
+  USERNAME
+  DOMAIN
+}
+
+enum DeviceType {
+  LAPTOP
+  DESKTOP
+  PHONE
+  TABLET
+  ROUTER
+  IOT
+  UNKNOWN
+}
+
+enum AlertCategory {
+  BREACH
+  DARK_WEB
+  BROKER_EXPOSURE
+  CREDIT
+  DEVICE_VULN
+  NETWORK
+  FINANCIAL
+}
+
+enum AlertSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_REMEDIATION
+  RESOLVED
+  ESCALATED
+}
+
+enum ActionType {
+  MANUAL
+  AUTOMATED
+  LINK
+}
+
+enum RemovalStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  REAPPEARED
+  FAILED
+}
+
+enum ClaimType {
+  IDENTITY_THEFT
+  FINANCIAL_FRAUD
+  RANSOMWARE
+  HARASSMENT
+  EXTORTION
+}
+
+enum ClaimStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DENIED
+  PAID
+}
+
+enum EscalationStatus {
+  PENDING
+  ANALYST_ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+// ─── Core Models ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  phone         String?
+  phoneVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  householdMemberships HouseholdMember[]
+  sessions             Session[]
+  accounts             Account[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Household ───────────────────────────────────────────────────────────────
+
+model Household {
+  id                   String   @id @default(cuid())
+  name                 String
+  plan                 Plan     @default(STANDARD)
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  subscriptionStatus   String   @default("inactive")
+  insurancePolicyId    String?
+  insuranceCarrier     String?
+  householdScore       Int      @default(100)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  members      HouseholdMember[]
+  devices      Device[]
+  alerts       Alert[]
+  claims       InsuranceClaim[]
+  escalations  Escalation[]
+  networkScans NetworkScan[]
+
+  @@map("households")
+}
+
+model HouseholdMember {
+  id          String     @id @default(cuid())
+  householdId String
+  userId      String
+  role        MemberRole @default(ADULT)
+  firstName   String
+  lastName    String
+  createdAt   DateTime   @default(now())
+
+  household       Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monitoredAssets MonitoredAsset[]
+  brokerRemovals  BrokerRemoval[]
+  alerts          Alert[]
+
+  @@unique([householdId, userId])
+  @@map("household_members")
+}
+
+// ─── Monitored Assets ────────────────────────────────────────────────────────
+
+model MonitoredAsset {
+  id            String    @id @default(cuid())
+  memberId      String
+  type          AssetType
+  valueEncrypted String   // AES-256 encrypted
+  valueHash     String    // SHA-256 for dedup lookups
+  label         String?   // e.g. "Work email", "Chase checking"
+  lastScannedAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  member        HouseholdMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  breachRecords BreachRecord[]
+
+  @@unique([memberId, valueHash])
+  @@map("monitored_assets")
+}
+
+model BreachRecord {
+  id          String   @id @default(cuid())
+  assetId     String
+  source      String   // e.g. "HaveIBeenPwned", "SpyCloud"
+  breachName  String
+  breachDate  DateTime?
+  dataClasses String[] // e.g. ["email", "password", "phone"]
+  description String?
+  detectedAt  DateTime @default(now())
+
+  asset MonitoredAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("breach_records")
+}
+
+// ─── Devices ─────────────────────────────────────────────────────────────────
+
+model Device {
+  id             String     @id @default(cuid())
+  householdId    String
+  type           DeviceType @default(UNKNOWN)
+  name           String
+  macAddress     String?
+  ipAddress      String?
+  os             String?
+  osVersion      String?
+  manufacturer   String?
+  model          String?
+  agentInstalled Boolean    @default(false)
+  agentVersion   String?
+  riskScore      Int        @default(0)
+  isOnline       Boolean    @default(false)
+  lastSeenAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  household        Household         @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  vulnerabilities  DeviceVulnerability[]
+  alerts           Alert[]
+
+  @@map("devices")
+}
+
+model DeviceVulnerability {
+  id          String   @id @default(cuid())
+  deviceId    String
+  cveId       String?
+  title       String
+  description String
+  severity    AlertSeverity
+  cvssScore   Float?
+  remediation String?
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("device_vulnerabilities")
+}
+
+model NetworkScan {
+  id            String   @id @default(cuid())
+  householdId   String
+  routerIp      String?
+  openPorts     Int[]
+  deviceCount   Int      @default(0)
+  unknownDevices Int     @default(0)
+  riskFlags     String[]
+  scannedAt     DateTime @default(now())
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@map("network_scans")
+}
+
+// ─── Alerts & Remediation ────────────────────────────────────────────────────
+
+model Alert {
+  id              String        @id @default(cuid())
+  householdId     String
+  memberId        String?
+  deviceId        String?
+  category        AlertCategory
+  severity        AlertSeverity
+  title           String
+  description     String
+  rawData         Json?
+  status          AlertStatus   @default(NEW)
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  household        Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  member           HouseholdMember?   @relation(fields: [memberId], references: [id])
+  device           Device?            @relation(fields: [deviceId], references: [id])
+  remediationSteps RemediationStep[]
+  escalation       Escalation?
+  claim            InsuranceClaim?
+
+  @@map("alerts")
+}
+
+model RemediationStep {
+  id          String     @id @default(cuid())
+  alertId     String
+  order       Int
+  title       String
+  description String
+  actionType  ActionType
+  actionUrl   String?
+  completedAt DateTime?
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("remediation_steps")
+}
+
+// ─── Data Broker Removal ─────────────────────────────────────────────────────
+
+model BrokerRemoval {
+  id          String        @id @default(cuid())
+  memberId    String
+  brokerName  String
+  brokerUrl   String
+  category    String?       // e.g. "people-search", "marketing", "background-check"
+  status      RemovalStatus @default(PENDING)
+  submittedAt DateTime?
+  confirmedAt DateTime?
+  nextCheckAt DateTime      @default(now())
+  attempts    Int           @default(0)
+  lastError   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  member HouseholdMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, brokerUrl])
+  @@map("broker_removals")
+}
+
+// ─── Insurance ───────────────────────────────────────────────────────────────
+
+model InsuranceClaim {
+  id             String      @id @default(cuid())
+  householdId    String
+  alertId        String?     @unique
+  type           ClaimType
+  description    String
+  amountClaimed  Float
+  evidenceUrls   String[]
+  status         ClaimStatus @default(DRAFT)
+  carrierClaimId String?
+  adjustorNotes  String?
+  amountApproved Float?
+  resolvedAt     DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  alert     Alert?    @relation(fields: [alertId], references: [id])
+
+  @@map("insurance_claims")
+}
+
+// ─── Human Response / Escalation ────────────────────────────────────────────
+
+model Escalation {
+  id              String           @id @default(cuid())
+  householdId     String
+  alertId         String           @unique
+  status          EscalationStatus @default(PENDING)
+  analystName     String?
+  analystEmail    String?
+  pagerdutyId     String?          // PagerDuty incident ID
+  priority        String           @default("high") // PagerDuty priority
+  summary         String
+  analystNotes    String?
+  actionsTaken    String[]
+  assignedAt      DateTime?
+  resolvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  alert     Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  messages  EscalationMessage[]
+
+  @@map("escalations")
+}
+
+model EscalationMessage {
+  id           String   @id @default(cuid())
+  escalationId String
+  senderType   String   // "analyst" | "member"
+  senderName   String
+  message      String
+  createdAt    DateTime @default(now())
+
+  escalation Escalation @relation(fields: [escalationId], references: [id], onDelete: Cascade)
+
+  @@map("escalation_messages")
+}
