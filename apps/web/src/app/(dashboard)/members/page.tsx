@@ -5,11 +5,12 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function MembersPage() {
   const { data: household, isLoading, refetch } = trpc.household.get.useQuery();
-  const addMember = trpc.household.addMember.useMutation({ onSuccess: () => { refetch(); setEmail(""); setName(""); setShowAdd(false); } });
+  const addMember = trpc.household.addMember.useMutation({ onSuccess: () => { refetch(); setEmail(""); setFirstName(""); setLastName(""); setShowAdd(false); } });
 
   const [showAdd, setShowAdd] = useState(false);
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const members = (household as any)?.members ?? [];
 
@@ -28,12 +29,20 @@ export default function MembersPage() {
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Invite Member</h2>
           <div className="space-y-3">
-            <input
-              className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm border border-gray-700 focus:outline-none focus:border-blue-500"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div className="flex gap-3">
+              <input
+                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 text-sm border border-gray-700 focus:outline-none focus:border-blue-500"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+              <input
+                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 text-sm border border-gray-700 focus:outline-none focus:border-blue-500"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
             <input
               className="w-full bg-gray-800 text-white rounded-lg px-4 py-3 text-sm border border-gray-700 focus:outline-none focus:border-blue-500"
               placeholder="Email"
@@ -43,8 +52,8 @@ export default function MembersPage() {
             />
             <div className="flex gap-3">
               <button
-                onClick={() => addMember.mutate({ email, name })}
-                disabled={!email || !name || addMember.isPending}
+                onClick={() => addMember.mutate({ email, firstName, lastName })}
+                disabled={!email || !firstName || !lastName || addMember.isPending}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
               >
                 {addMember.isPending ? "Adding..." : "Add Member"}
