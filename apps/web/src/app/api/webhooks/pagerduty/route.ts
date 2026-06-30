@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
       await db.escalationMessage.create({
         data: {
           escalationId,
-          senderRole: "ANALYST",
+          senderType: "analyst",
+          senderName: assignee,
           message: `Analyst ${assignee} has acknowledged this escalation and is actively investigating.`,
         },
       }).catch(() => null);
