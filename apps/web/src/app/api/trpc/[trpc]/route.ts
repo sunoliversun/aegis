@@ -3,7 +3,11 @@ import { appRouter, createTRPCContext } from "@aegis/api";
 import { auth } from "@/lib/auth";
 
 const handler = async (req: Request) => {
-  const session = await auth();
+  const raw = await auth();
+  const session =
+    raw?.user?.id && raw?.user?.email
+      ? { user: { id: raw.user.id, email: raw.user.email, name: raw.user.name ?? null } }
+      : null;
 
   return fetchRequestHandler({
     endpoint: "/api/trpc",
