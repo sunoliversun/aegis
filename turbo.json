@@ -31,7 +31,8 @@
     "PAGERDUTY_FROM_EMAIL",
     "OPTERY_API_KEY",
     "SPYCLOUD_API_KEY",
-    "NODE_ENV"
+    "NODE_ENV",
+    "PRISMA_GENERATE_SKIP_AUTOINSTALL"
   ],
   "tasks": {
     "build": {
