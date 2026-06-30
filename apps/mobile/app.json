@@ -13,9 +13,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.aegis.security",
+      "bundleIdentifier": "com.sunoliver.aegis",
       "infoPlist": {
-        "NSLocalNetworkUsageDescription": "Aegis scans your home network for security vulnerabilities."
+        "NSLocalNetworkUsageDescription": "Aegis scans your home network for security vulnerabilities.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -23,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#030712"
       },
-      "package": "com.aegis.security",
+      "package": "com.sunoliver.aegis",
       "permissions": [
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.ACCESS_WIFI_STATE"
@@ -46,7 +47,13 @@
     ],
     "scheme": "aegis",
     "extra": {
-      "eas": { "projectId": "your-eas-project-id" }
-    }
+      "eas": {
+        "projectId": "61d5261e-6672-4872-a4e5-c7e124dc7135"
+      },
+      "router": {
+        "origin": false
+      }
+    },
+    "owner": "sunoliver"
   }
 }
