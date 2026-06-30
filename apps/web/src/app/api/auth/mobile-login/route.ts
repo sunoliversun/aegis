@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
     const { email, password } = schema.parse(body);
 
     const user = await db.user.findUnique({ where: { email } });
-    if (!user || !user.password) {
+    if (!user || !user.passwordHash) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     const hash = crypto.createHash("sha256").update(password).digest("hex");
-    if (hash !== user.password) {
+    if (hash !== user.passwordHash) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
