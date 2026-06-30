@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: import("react").ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
