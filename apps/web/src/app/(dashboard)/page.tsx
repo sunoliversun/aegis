@@ -4,7 +4,6 @@ import { trpc } from "@/lib/trpc";
 import ScoreGauge from "@/components/ScoreGauge";
 import AlertFeed from "@/components/AlertFeed";
 import QuickStats from "@/components/QuickStats";
-import RecentActivity from "@/components/RecentActivity";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
