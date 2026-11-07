@@ -346,6 +346,7 @@ model Alert {
   remediationSteps RemediationStep[]
   escalation       Escalation?
   claim            InsuranceClaim?
+  messageScan      MessageScan?
 
   @@map("alerts")
 }
