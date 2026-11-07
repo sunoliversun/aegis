@@ -53,6 +53,19 @@ enum AlertCategory {
   DEVICE_VULN
   NETWORK
   FINANCIAL
+  PHISHING
+}
+
+enum ScanType {
+  EMAIL
+  SMS
+  CALL
+}
+
+enum ScanVerdict {
+  SAFE
+  SUSPICIOUS
+  PHISHING
 }
 
 enum AlertSeverity {
@@ -209,6 +222,7 @@ model HouseholdMember {
   monitoredAssets MonitoredAsset[]
   brokerRemovals  BrokerRemoval[]
   alerts          Alert[]
+  messageScans    MessageScan[]
 
   @@unique([householdId, userId])
   @@map("household_members")
@@ -422,6 +436,28 @@ model Escalation {
   messages  EscalationMessage[]
 
   @@map("escalations")
+}
+
+// ─── Message Screening ───────────────────────────────────────────────────────
+
+model MessageScan {
+  id          String      @id @default(cuid())
+  memberId    String
+  type        ScanType
+  content     String
+  sender      String?     // email address, phone number, or caller ID
+  subject     String?     // for emails
+  verdict     ScanVerdict
+  riskScore   Int         // 0–100
+  findings    Json        // array of { flag, detail, severity }
+  summary     String      // plain-English explanation
+  alertId     String?     @unique
+  scannedAt   DateTime    @default(now())
+
+  member HouseholdMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  alert  Alert?          @relation(fields: [alertId], references: [id])
+
+  @@map("message_scans")
 }
 
 model EscalationMessage {

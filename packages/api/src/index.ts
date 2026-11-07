@@ -9,6 +9,7 @@ import { devicesRouter } from "./routers/devices";
 import { brokersRouter } from "./routers/brokers";
 import { insuranceRouter } from "./routers/insurance";
 import { escalationsRouter } from "./routers/escalations";
+import { screeningRouter } from "./routers/screening";
 
 export const appRouter = createTRPCRouter({
   household: householdRouter,
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   brokers: brokersRouter,
   insurance: insuranceRouter,
   escalations: escalationsRouter,
+  screening: screeningRouter,
 });
 
 export type AppRouter = typeof appRouter;

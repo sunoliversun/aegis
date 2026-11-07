@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, Bell, Eye, Database, Monitor, Wifi, FileText, Users, Settings, LogOut } from "lucide-react";
+import { Shield, Bell, Eye, Database, Monitor, Wifi, FileText, Users, Settings, LogOut, ScanLine } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/brokers", label: "Data Brokers", Icon: Database },
   { href: "/devices", label: "Devices", Icon: Monitor },
   { href: "/network", label: "Network", Icon: Wifi },
+  { href: "/screening", label: "Screening", Icon: ScanLine },
   { href: "/insurance", label: "Insurance", Icon: FileText },
   { href: "/members", label: "Members", Icon: Users },
 ];

@@ -4,12 +4,13 @@
   "main": "./src/index.ts",
   "dependencies": {
     "@aegis/db": "*",
+    "@anthropic-ai/sdk": "^0.39.0",
     "@trpc/server": "^11.0.0",
-    "zod": "^3.23.0",
-    "superjson": "^2.2.0"
+    "superjson": "^2.2.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
   }
 }
