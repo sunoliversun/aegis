@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const [firstName, ...rest] = name.split(" ");
     const lastName = rest.join(" ");
 
-    await db.user.create({
+    const user = await db.user.create({
       data: {
         name,
         email,
@@ -44,7 +44,17 @@ export async function POST(req: Request) {
           },
         },
       },
+      include: { householdMemberships: { select: { id: true } } },
     });
+
+    // Set the scan email address now that we have the member id
+    const memberId = user.householdMemberships[0]?.id;
+    if (memberId) {
+      await db.householdMember.update({
+        where: { id: memberId },
+        data: { scanEmail: `${memberId}@scan.aegis.app` },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (e: any) {

@@ -1,5 +1,7 @@
 export { createTRPCContext, createTRPCRouter, publicProcedure, protectedProcedure } from "./trpc";
 export type { Context } from "./trpc";
+export { runScan, saveScan } from "./lib/scanMessage";
+export type { ScanResult, ScanVerdict } from "./lib/scanMessage";
 
 import { createTRPCRouter } from "./trpc";
 import { householdRouter } from "./routers/household";

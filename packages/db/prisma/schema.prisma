@@ -209,13 +209,15 @@ model Household {
 }
 
 model HouseholdMember {
-  id          String     @id @default(cuid())
-  householdId String
-  userId      String
-  role        MemberRole @default(ADULT)
-  firstName   String
-  lastName    String
-  createdAt   DateTime   @default(now())
+  id           String     @id @default(cuid())
+  householdId  String
+  userId       String
+  role         MemberRole @default(ADULT)
+  firstName    String
+  lastName     String
+  scanEmail    String?    @unique // {id}@scan.aegis.app — set on member creation
+  twilioNumber String?    @unique // Twilio number assigned for call/SMS screening
+  createdAt    DateTime   @default(now())
 
   household       Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
