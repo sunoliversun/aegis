@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     rootDir: .
-    buildCommand: npm install && npm run build --workspace=packages/db && npx tsc -p workers/monitor/tsconfig.json
+    buildCommand: npm install --include=dev && npm run build --workspace=packages/db && npx tsc -p workers/monitor/tsconfig.json
     startCommand: node workers/monitor/dist/index.js
     healthCheckPath: /health
     envVars:
