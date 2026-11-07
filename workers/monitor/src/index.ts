@@ -1,4 +1,5 @@
 import "dotenv/config";
+import http from "http";
 import cron from "node-cron";
 import { queues } from "./queue";
 import { startBreachScanWorker } from "./jobs/breach-scan";
@@ -8,6 +9,18 @@ import { startDeviceScanWorker } from "./jobs/device-scan";
 import { db } from "@aegis/db";
 
 console.log("🛡️  Aegis Monitor starting...");
+
+// Health check server for Render free tier (web service)
+const PORT = process.env.PORT ?? 3001;
+http.createServer((req, res) => {
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok", uptime: process.uptime() }));
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+}).listen(PORT, () => console.log(`[health] HTTP server on :${PORT}`));
 
 // Start all workers
 const workers = [

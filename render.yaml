@@ -1,5 +1,5 @@
 services:
-  - type: worker
+  - type: web
     name: aegis-monitor
     runtime: node
     region: oregon
@@ -7,6 +7,7 @@ services:
     rootDir: .
     buildCommand: npm install && npm run build --workspace=packages/db && npx tsc -p workers/monitor/tsconfig.json
     startCommand: node workers/monitor/dist/index.js
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
