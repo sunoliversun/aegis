@@ -17,7 +17,7 @@ out
 # Turbo
 .turbo
 
-# Prisma
+# Prisma generated client (goes to node_modules by default)
 packages/db/src/generated
 
 # Expo / React Native

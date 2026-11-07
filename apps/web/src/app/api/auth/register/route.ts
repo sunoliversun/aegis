@@ -52,6 +52,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid input", details: e.errors }, { status: 400 });
     }
     console.error("Registration error:", e);
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    const message = e instanceof Error ? e.message : "Registration failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
