@@ -21,4 +21,15 @@ config.cacheStores = [
   new FileStore({ root: path.join(projectRoot, ".metro-cache") }),
 ];
 
+// copy-anything v4 ships pure ESM which Metro cannot bundle; redirect to local CJS shim
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === "copy-anything") {
+    return {
+      type: "sourceFile",
+      filePath: path.resolve(projectRoot, "shims/copy-anything.js"),
+    };
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;
