@@ -15,7 +15,7 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: "#3b6bfa",
         tabBarInactiveTintColor: "#6b7280",
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: "600" },
       }}
     >
       <Tabs.Screen
@@ -33,10 +33,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="identity"
+        name="scan"
         options={{
-          title: "Identity",
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
+          title: "Scan",
+          tabBarIcon: ({ color, size }) => <Ionicons name="scan" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -47,12 +47,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="insurance"
+        name="settings"
         options={{
-          title: "Insurance",
-          tabBarIcon: ({ color, size }) => <Ionicons name="umbrella" size={size} color={color} />,
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} />,
         }}
       />
+      {/* Hidden tabs — still accessible via deep link */}
+      <Tabs.Screen name="identity"   options={{ href: null }} />
+      <Tabs.Screen name="insurance"  options={{ href: null }} />
     </Tabs>
   );
 }
