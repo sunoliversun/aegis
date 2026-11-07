@@ -27,7 +27,9 @@
       "package": "com.sunoliver.aegis",
       "permissions": [
         "android.permission.ACCESS_NETWORK_STATE",
-        "android.permission.ACCESS_WIFI_STATE"
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.READ_SMS"
       ]
     },
     "web": {
@@ -36,6 +38,8 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-background-fetch",
+      "expo-task-manager",
       [
         "expo-notifications",
         {
