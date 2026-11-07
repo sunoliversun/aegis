@@ -1,0 +1,18 @@
+services:
+  - type: worker
+    name: aegis-monitor
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: npm install && npm run build --workspace=packages/db && npx tsc -p workers/monitor/tsconfig.json
+    startCommand: node workers/monitor/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
